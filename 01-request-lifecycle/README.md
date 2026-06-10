@@ -23,29 +23,32 @@ A comprehensive breakdown of the low-level network mechanics, transport protocol
 
 ## 📊 Complete System Topology
 
-sequenceDiagram
-    autonumber
-    actor User as Client Browser
-    participant DNS as DNS Root Server
-    participant Proxy as Reverse Proxy (Nginx)
-    participant App as Express Backend API
+```mermaid
+graph TD
+    %% Define Layout and Connections
+    User((Client Browser)) -->|1. Resolve Domain| DNS[DNS Nameservers]
+    User -->|2. Secure HTTPS Pipe| Cloudflare{Edge Network / CDN}
+    
+    subgraph Public_Internet [Public Internet Layer]
+        DNS
+        Cloudflare
+    end
 
-    Note over User, DNS: Step 1: DNS Resolution
-    User->>+DNS: Resolve URL to IP (Where is jurisynth.com?)
-    DNS-->>-User: Return Target IP Address (192.0.2.1)
+    subgraph VPC_Security_Boundary [Private Cloud Network / VPC]
+        Cloudflare -->|3. Forward Traffic| Nginx[Nginx Reverse Proxy]
+        
+        subgraph App_Cluster [Internal Application Cluster]
+            Nginx -->|4. SSL Terminated / Clear HTTP| Express[Express Backend API]
+            Express -->|5. Query Read/Write| DB[(PostgreSQL Database)]
+        end
+    end
 
-    Note over User, Proxy: Step 2 & 3: Connection & Security
-    User->>+Proxy: TCP 3-Way Handshake (SYN)
-    Proxy-->>User: SYN-ACK
-    User->>Proxy: ACK (TCP Connection Established)
-    User->>Proxy: TLS Cryptographic Handshake (Exchange Keys)
-    Proxy-->>-User: Secure HTTPS Pipe Active
+    %% Apply Senior-Level Structural Styling
+    style User fill:#2563eb,stroke:#fff,stroke-width:2px,color:#fff
+    style Cloudflare fill:#f97316,stroke:#fff,stroke-width:2px,color:#fff
+    style Nginx fill:#16a34a,stroke:#fff,stroke-width:2px,color:#fff
+    style Express fill:#4f46e5,stroke:#fff,stroke-width:2px,color:#fff
+    style DB fill:#0d9488,stroke:#fff,stroke-width:2px,color:#fff
 
-    Note over Proxy, App: Step 4: Reverse Proxy Routing
-    User->>+Proxy: GET /api/cases (Encrypted Payload)
-    Note over Proxy: Decrypts SSL Payload<br/>Filters Malicious Traffic
-    Proxy->>+App: Forward Clean HTTP Request (Internal Network)
-    App->>App: Execute Route Middleware & Controller
-    App-->>-Proxy: 200 OK (JSON Payload Response)
-    Note over Proxy: Encrypts Payload Data
-    Proxy-->>-User: Stream Secured Response to Client
+    %% Class Definitions for text wrapping/layout sharpness
+    classDef default font-family:sans-serif,font-size:12px;
