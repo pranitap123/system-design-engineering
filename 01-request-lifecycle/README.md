@@ -22,3 +22,30 @@ A comprehensive breakdown of the low-level network mechanics, transport protocol
 ---
 
 ## 📊 Complete System Topology
+
+sequenceDiagram
+    autonumber
+    actor User as Client Browser
+    participant DNS as DNS Root Server
+    participant Proxy as Reverse Proxy (Nginx)
+    participant App as Express Backend API
+
+    Note over User, DNS: Step 1: DNS Resolution
+    User->>+DNS: Resolve URL to IP (Where is jurisynth.com?)
+    DNS-->>-User: Return Target IP Address (192.0.2.1)
+
+    Note over User, Proxy: Step 2 & 3: Connection & Security
+    User->>+Proxy: TCP 3-Way Handshake (SYN)
+    Proxy-->>User: SYN-ACK
+    User->>Proxy: ACK (TCP Connection Established)
+    User->>Proxy: TLS Cryptographic Handshake (Exchange Keys)
+    Proxy-->>-User: Secure HTTPS Pipe Active
+
+    Note over Proxy, App: Step 4: Reverse Proxy Routing
+    User->>+Proxy: GET /api/cases (Encrypted Payload)
+    Note over Proxy: Decrypts SSL Payload<br/>Filters Malicious Traffic
+    Proxy->>+App: Forward Clean HTTP Request (Internal Network)
+    App->>App: Execute Route Middleware & Controller
+    App-->>-Proxy: 200 OK (JSON Payload Response)
+    Note over Proxy: Encrypts Payload Data
+    Proxy-->>-User: Stream Secured Response to Client
