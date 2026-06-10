@@ -1,0 +1,29 @@
+```mermaid
+graph TD
+    %% Define Layout and Connections
+    User((Client Browser)) -->|1. Resolve Domain| DNS[DNS Nameservers]
+    User -->|2. Secure HTTPS Pipe| Cloudflare{Edge Network / CDN}
+    
+    subgraph Public_Internet [Public Internet Layer]
+        DNS
+        Cloudflare
+    end
+
+    subgraph VPC_Security_Boundary [Private Cloud Network / VPC]
+        Cloudflare -->|3. Forward Traffic| Nginx[Nginx Reverse Proxy]
+        
+        subgraph App_Cluster [Internal Application Cluster]
+            Nginx -->|4. SSL Terminated / Clear HTTP| Express[Express Backend API]
+            Express -->|5. Query Read/Write| DB[(PostgreSQL Database)]
+        end
+    end
+
+    %% Apply Senior-Level Structural Styling
+    style User fill:#2563eb,stroke:#fff,stroke-width:2px,color:#fff
+    style Cloudflare fill:#f97316,stroke:#fff,stroke-width:2px,color:#fff
+    style Nginx fill:#16a34a,stroke:#fff,stroke-width:2px,color:#fff
+    style Express fill:#4f46e5,stroke:#fff,stroke-width:2px,color:#fff
+    style DB fill:#0d9488,stroke:#fff,stroke-width:2px,color:#fff
+
+    %% Class Definitions for text wrapping/layout sharpness
+    classDef default font-family:sans-serif,font-size:12px;
